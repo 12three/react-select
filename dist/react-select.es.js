@@ -114,7 +114,6 @@ function clearRenderer() {
 	});
 }
 
-var babelHelpers = {};
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
   return typeof obj;
 } : function (obj) {
@@ -345,28 +344,6 @@ var possibleConstructorReturn = function (self, call) {
   return call && (typeof call === "object" || typeof call === "function") ? call : self;
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-babelHelpers;
-
 var Option = function (_React$Component) {
 	inherits(Option, _React$Component);
 
@@ -465,6 +442,7 @@ var Option = function (_React$Component) {
 				{ className: className,
 					style: option.style,
 					role: 'option',
+					'aria-label': option.label,
 					onMouseDown: this.handleMouseDown,
 					onMouseEnter: this.handleMouseEnter,
 					onMouseMove: this.handleMouseMove,
@@ -649,8 +627,8 @@ var Select$1 = function (_React$Component) {
 	}
 
 	createClass(Select, [{
-		key: 'componentWillMount',
-		value: function componentWillMount() {
+		key: 'UNSAFE_componentWillMount',
+		value: function UNSAFE_componentWillMount() {
 			this._instancePrefix = 'react-select-' + (this.props.instanceId || ++instanceId) + '-';
 			var valueArray = this.getValueArray(this.props.value);
 
@@ -663,13 +641,16 @@ var Select$1 = function (_React$Component) {
 	}, {
 		key: 'componentDidMount',
 		value: function componentDidMount() {
-			if (this.props.autofocus) {
+			if (typeof this.props.autofocus !== 'undefined' && typeof console !== 'undefined') {
+				console.warn('Warning: The autofocus prop will be deprecated in react-select1.0.0 in favor of autoFocus to match React\'s autoFocus prop');
+			}
+			if (this.props.autoFocus || this.props.autofocus) {
 				this.focus();
 			}
 		}
 	}, {
-		key: 'componentWillReceiveProps',
-		value: function componentWillReceiveProps(nextProps) {
+		key: 'UNSAFE_componentWillReceiveProps',
+		value: function UNSAFE_componentWillReceiveProps(nextProps) {
 			var valueArray = this.getValueArray(nextProps.value, nextProps);
 
 			if (nextProps.required) {
@@ -682,8 +663,8 @@ var Select$1 = function (_React$Component) {
 			}
 		}
 	}, {
-		key: 'componentWillUpdate',
-		value: function componentWillUpdate(nextProps, nextState) {
+		key: 'UNSAFE_componentWillUpdate',
+		value: function UNSAFE_componentWillUpdate(nextProps, nextState) {
 			if (nextState.isOpen !== this.state.isOpen) {
 				this.toggleTouchOutsideEvent(nextState.isOpen);
 				var handler = nextState.isOpen ? nextProps.onOpen : nextProps.onClose;
@@ -729,11 +710,7 @@ var Select$1 = function (_React$Component) {
 	}, {
 		key: 'componentWillUnmount',
 		value: function componentWillUnmount() {
-			if (!document.removeEventListener && document.detachEvent) {
-				document.detachEvent('ontouchstart', this.handleTouchOutside);
-			} else {
-				document.removeEventListener('touchstart', this.handleTouchOutside);
-			}
+			this.toggleTouchOutsideEvent(false);
 		}
 	}, {
 		key: 'toggleTouchOutsideEvent',
@@ -1093,7 +1070,7 @@ var Select$1 = function (_React$Component) {
 		value: function getValueArray(value, nextProps) {
 			var _this2 = this;
 
-			/** support optionally passing in the `nextProps` so `componentWillReceiveProps` updates will function as expected */
+			/** support optionally passing in the `nextProps` so `UNSAFE_componentWillReceiveProps` updates will function as expected */
 			var props = (typeof nextProps === 'undefined' ? 'undefined' : _typeof(nextProps)) === 'object' ? nextProps : this.props;
 			if (props.multi) {
 				if (typeof value === 'string') value = value.split(props.delimiter);
@@ -1483,7 +1460,7 @@ var Select$1 = function (_React$Component) {
 			}
 			return React.createElement(
 				'div',
-				{ className: className },
+				{ className: className, key: 'input-wrap' },
 				React.createElement('input', inputProps)
 			);
 		}
@@ -1746,10 +1723,10 @@ Select$1.propTypes = {
 	'aria-describedby': PropTypes.string, // HTML ID(s) of element(s) that should be used to describe this input (for assistive tech)
 	'aria-label': PropTypes.string, // Aria label (for assistive tech)
 	'aria-labelledby': PropTypes.string, // HTML ID of an element that should be used as the label (for assistive tech)
-	addLabelText: PropTypes.string, // placeholder displayed when you want to add a label on a multi-value input
 	arrowRenderer: PropTypes.func, // Create drop-down caret element
 	autoBlur: PropTypes.bool, // automatically blur the component when an option is selected
-	autofocus: PropTypes.bool, // autofocus the component on mount
+	autofocus: PropTypes.bool, // deprecated; use autoFocus instead
+	autoFocus: PropTypes.bool, // autofocus the component on mount
 	autosize: PropTypes.bool, // whether to enable autosizing or not
 	backspaceRemoves: PropTypes.bool, // whether backspace removes an item if there is no text input
 	backspaceToRemoveMessage: PropTypes.string, // Message to use for screenreaders to press backspace to remove the current item - {label} is replaced with the item label
@@ -1818,7 +1795,6 @@ Select$1.propTypes = {
 };
 
 Select$1.defaultProps = {
-	addLabelText: 'Add "{label}"?',
 	arrowRenderer: arrowRenderer,
 	autosize: true,
 	backspaceRemoves: true,
@@ -1927,8 +1903,8 @@ var Async = function (_Component) {
 			}
 		}
 	}, {
-		key: 'componentWillReceiveProps',
-		value: function componentWillReceiveProps(nextProps) {
+		key: 'UNSAFE_componentWillReceiveProps',
+		value: function UNSAFE_componentWillReceiveProps(nextProps) {
 			if (nextProps.options !== this.props.options) {
 				this.setState({
 					options: nextProps.options
@@ -1950,6 +1926,8 @@ var Async = function (_Component) {
 			var cache = this._cache;
 
 			if (cache && Object.prototype.hasOwnProperty.call(cache, inputValue)) {
+				this._callback = null;
+
 				this.setState({
 					options: cache[inputValue]
 				});
@@ -1958,14 +1936,14 @@ var Async = function (_Component) {
 			}
 
 			var callback = function callback(error, data) {
+				var options = data && data.options || [];
+
+				if (cache) {
+					cache[inputValue] = options;
+				}
+
 				if (callback === _this2._callback) {
 					_this2._callback = null;
-
-					var options = data && data.options || [];
-
-					if (cache) {
-						cache[inputValue] = options;
-					}
 
 					_this2.setState({
 						isLoading: false,
@@ -2211,13 +2189,15 @@ var CreatableSelect = function (_React$Component) {
 		value: function onInputChange(input) {
 			var onInputChange = this.props.onInputChange;
 
+			// This value may be needed in between Select mounts (when this.select is null)
+
+			this.inputValue = input;
 
 			if (onInputChange) {
-				onInputChange(input);
+				this.inputValue = onInputChange(input);
 			}
 
-			// This value may be needed in between Select mounts (when this.select is null)
-			this.inputValue = input;
+			return this.inputValue;
 		}
 	}, {
 		key: 'onInputKeyDown',
